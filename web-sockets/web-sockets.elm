@@ -29,7 +29,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model "" False [ "hello", "wat?" ], Cmd.none )
+    ( Model "" False [], Cmd.none )
 
 
 
@@ -95,4 +95,4 @@ viewMessage msg =
 
 url : String
 url =
-    "ws://localhost:8080"
+    "wss://sdw.io:8020/chat"
