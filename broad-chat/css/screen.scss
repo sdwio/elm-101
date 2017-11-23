@@ -1,0 +1,144 @@
+$background: #e5e5e5;
+$light-background: #ecf0f1;
+$dark: #9099a2;
+$darker: #34495e;
+$font: lighten(#34495e, 5%);
+$accent: #27ae60;
+$white: #fff;
+
+///
+
+body {
+  background-color: $light-background;
+  color: $font;
+  font-family: "Encode Sans", sans-serif;
+  font-size: 20px;
+}
+
+.grey {
+  color: $dark;
+  font-size: 12px;
+}
+
+.head {
+  padding: 8px;
+  margin-bottom: 12px;
+  background-color: $darker;
+  color: $light-background;
+  border-radius: 5px;
+  h1 {
+    padding: 0;
+    margin: 0;
+  }
+  i {
+    padding: 4px;
+  }
+}
+
+.active-users-heading {
+  margin: 8px 0;
+}
+.active-users-list {
+  li {
+    list-style-type: none;
+    margin: 0;
+    font-weight: bold;
+    font-style: italic;
+  }
+}
+
+.input-frame {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  .input-element {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: $white;
+    border-radius: 5px;
+    cursor: text;
+    label {
+      cursor: text;
+      //width: 50px;
+      background-color: $white;
+      padding: 0 8px;
+      margin: 0;
+    }
+    input {
+      background-color: lime;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+  }
+  .send-button {
+    cursor: pointer;
+    position: relative;
+    padding: 8px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: $accent;
+    color: $light-background;
+    margin-left: 8px;
+    border: 1px solid $accent;
+    transition: background-color 0.5s, color 0.5s;
+    &:hover {
+      background-color: $light-background;
+      color: $accent;
+      transition: background-color 0.5s, color 0.5s;
+    }
+    i {
+      position: absolute;
+      top: 12px;
+      left: 10px;
+    }
+  }
+}
+.main-input {
+  outline: none;
+  border: none !important;
+  background-color: $white !important;
+  width: auto;
+}
+
+.chat-history {
+  li {
+    list-style-type: none;
+    margin: 0;
+  }
+  .chat-entry {
+    animation: flashing-text 10s;
+    opacity: 0.7;
+    .chat-time {
+      margin-top: -4px;
+      margin-bottom: -8px;
+      text-align: right;
+    }
+    .name {
+      font-weight: bold;
+      font-style: italic;
+    }
+  }
+}
+
+/// unfortunately this does not work as intended, the new items are added at the
+/// bottom
+@keyframes flashing-text {
+  0% {
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.outer-frame {
+  max-width: 1000px;
+  padding: 8px;
+  margin: auto;
+}
