@@ -372,8 +372,8 @@ linkCss route =
 view : Model -> Html Msg
 view model =
     div []
-        [ static <| linkCss "css/Skeleton-2.0.4/css/skeleton.css"
-        , static <| linkCss "css/normalize.css"
+        [ static <| linkCss "node-modules/skeleton-css/css/skeleton.css"
+        , static <| linkCss "node-modules/skeleton-css/css//normalize.css"
         , static <| linkCss "https://fonts.googleapis.com/css?family=Encode+Sans"
         , static <| linkCss "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
         , static <| linkCss "css/screen.css"
@@ -461,7 +461,7 @@ activeUsers model =
 
 listClientNames : List String -> Html Never
 listClientNames clientNames =
-    List.map
+    List.map (\message -> s ++ "!" "hello") model.message
 
 
 inputFrame : Model -> Html Msg
