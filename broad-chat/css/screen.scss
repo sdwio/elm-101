@@ -20,6 +20,11 @@ body {
   font-size: 12px;
 }
 
+button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .head {
   padding: 8px;
   margin-bottom: 12px;
