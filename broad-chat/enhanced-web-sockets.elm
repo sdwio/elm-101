@@ -9,7 +9,7 @@ import Html.Extra exposing (static)
 import Html.Keyed as Keyed
 import Json.Decode as Decode
 import Json.Encode exposing (..)
-import List exposing (reverse)
+import List
 import String exposing (length)
 import WebSocket
 
@@ -75,6 +75,26 @@ standardMessageDecoder json =
             (Decode.field "id" Decode.int)
             (Decode.field "type" Decode.string)
             (Decode.field "timestamp" Decode.float)
+        )
+        json
+
+
+type alias InfoMessage =
+    { id : Int
+    , messageType : String
+    , timestamp : Float
+    , text : String
+    }
+
+
+infoMessageDecoder : String -> Result String InfoMessage
+infoMessageDecoder json =
+    Decode.decodeString
+        (Decode.map4 InfoMessage
+            (Decode.field "id" Decode.int)
+            (Decode.field "type" Decode.string)
+            (Decode.field "timestamp" Decode.float)
+            (Decode.field "text" Decode.string)
         )
         json
 
@@ -216,8 +236,9 @@ evaluateNewMessage model json =
             Decode.decodeString (Decode.field "type" Decode.string) json
     in
     case messageTypeString of
-        -- Ok "Info" ->
-        --    justAddJson model json
+        Ok "Info" ->
+            handleInfoMessage model json
+
         Ok "ChatMessage" ->
             handleChatMessage model json
 
@@ -287,6 +308,31 @@ handleChatMessage model json =
                     , class = "chat-message"
                     , timestamp = chatMessage.timestamp
                     , id = chatMessage.id
+                    }
+            in
+            ( { model
+                | waiting = False
+                , appState = Connected
+                , messages = message :: model.messages
+              }
+            , Cmd.none
+            )
+
+        Err string ->
+            justAddJson model json
+
+
+handleInfoMessage : Model -> String -> ( Model, Cmd Msg )
+handleInfoMessage model json =
+    case infoMessageDecoder json of
+        Ok infoMessage ->
+            let
+                message =
+                    { from = Nothing
+                    , text = infoMessage.text
+                    , class = "info-message"
+                    , timestamp = infoMessage.timestamp
+                    , id = infoMessage.id
                     }
             in
             ( { model
@@ -372,8 +418,8 @@ linkCss route =
 view : Model -> Html Msg
 view model =
     div []
-        [ static <| linkCss "node-modules/skeleton-css/css/skeleton.css"
-        , static <| linkCss "node-modules/skeleton-css/css//normalize.css"
+        [ static <| linkCss "node_modules/skeleton-css/css/skeleton.css"
+        , static <| linkCss "node_modules/skeleton-css/css//normalize.css"
         , static <| linkCss "https://fonts.googleapis.com/css?family=Encode+Sans"
         , static <| linkCss "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
         , static <| linkCss "css/screen.css"
@@ -453,15 +499,15 @@ mainStructure model =
 activeUsers : Model -> Html Msg
 activeUsers model =
     div [ class "active-users" ]
-        [ div [ class "active-users-heading" ] [ text "2 active users:" ]
+        [ div [ class "active-users-heading" ] [ text <| toString (List.length model.clientNames) ++ " active users:" ]
         , div [ class "active-users-list" ]
-            [ ul [] [ static <| listClientNames model.clientNames ] ]
+            [ ul [] (listClientNames model.clientNames) ]
         ]
 
 
-listClientNames : List String -> Html Never
+listClientNames : List String -> List (Html msg)
 listClientNames clientNames =
-    List.map (\message -> s ++ "!" "hello") model.message
+    List.map (\name -> li [] [ text name ]) clientNames
 
 
 inputFrame : Model -> Html Msg
@@ -526,7 +572,6 @@ chatEntry1 message =
             [ span [ class "name" ] [ text from ]
             , text message.text
             ]
-        , div [] [ text ("id " ++ toString message.id) ]
         ]
     )
 
@@ -543,6 +588,20 @@ viewMessage msg =
 url : String
 url =
     "ws://localhost:8080"
+
+
+colors =
+    [ ( "Greensea", "#16a085" )
+    , ( "Nephritis", "#27ae60" )
+    , ( "Belizehole", "#2980b9" )
+    , ( "Wisteria", "#8e44ad" )
+    , ( "Midnightblue", "#2c3e50" )
+    , ( "Sunflower", "#f1c40f" )
+    , ( "Orange", "#f39c12" )
+    , ( "Pumpkin", "#d35400" )
+    , ( "Pomegranate", "#c0392b" )
+    , ( "Asbestor", "#7f8c8d" )
+    ]
 
 
 
