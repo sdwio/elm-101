@@ -4,3 +4,4 @@
 .DS_Store
 **/*.css
 **/*.css.map
+**/css/watch*
