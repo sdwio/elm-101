@@ -442,10 +442,22 @@ enterYourName model =
             , value model.naming.name
             ]
             []
+        , ul [] displayColors
         , button
-            [ namingIsValid model.naming |> not |> disabled, onClick InitializeConnection ]
+            [ namingIsValid model.naming |> not |> disabled
+            , onClick InitializeConnection
+            ]
             [ text "jetzt Loslegen!" ]
         ]
+
+
+displayColors =
+    List.map
+        (\color ->
+            li [ style [ ( "background-color", Tuple.second color ) ] ]
+                [ text <| Tuple.first color ]
+        )
+        colors
 
 
 emptyAttribute =
