@@ -34,7 +34,7 @@ type AppState
 
 
 type alias Naming =
-    { name : String }
+    { name : String, hex : String }
 
 
 type alias DisplayedMessage =
@@ -53,6 +53,17 @@ type alias Model =
     , messages : List DisplayedMessage
     , appState : AppState
     , clientNames : List String
+    }
+
+
+startingState : Model
+startingState =
+    { input = ""
+    , naming = Naming "" ""
+    , waiting = False
+    , messages = []
+    , appState = NameSelection
+    , clientNames = []
     }
 
 
@@ -159,17 +170,6 @@ type alias MessageSent =
 --
 
 
-startingState : Model
-startingState =
-    { input = ""
-    , naming = Naming ""
-    , waiting = False
-    , messages = []
-    , appState = NameSelection
-    , clientNames = []
-    }
-
-
 init : ( Model, Cmd Msg )
 init =
     ( startingState, Cmd.none )
@@ -181,6 +181,7 @@ type Msg
     | Send
     | NewMessage String
     | InitializeConnection
+    | SetColor String
 
 
 
@@ -222,6 +223,13 @@ update msg model =
 
         InitializeConnection ->
             ( { model | appState = Connecting }, Cmd.none )
+
+        SetColor hex ->
+            let
+                naming =
+                    model.naming
+            in
+            ( { model | naming = { naming | hex = hex } }, Cmd.none )
 
 
 
@@ -442,7 +450,7 @@ enterYourName model =
             , value model.naming.name
             ]
             []
-        , ul [] displayColors
+        , ul [] <| displayColors model.naming.hex
         , button
             [ namingIsValid model.naming |> not |> disabled
             , onClick InitializeConnection
@@ -451,10 +459,22 @@ enterYourName model =
         ]
 
 
-displayColors =
+displayColors : String -> List (Html Msg)
+displayColors hex =
     List.map
         (\color ->
-            li [ style [ ( "background-color", Tuple.second color ) ] ]
+            let
+                activeClass =
+                    if Tuple.second color == hex then
+                        "active"
+                    else
+                        ""
+            in
+            li
+                [ style [ ( "background-color", Tuple.second color ) ]
+                , onClick (SetColor (Tuple.second color))
+                , class activeClass
+                ]
                 [ text <| Tuple.first color ]
         )
         colors
@@ -602,6 +622,7 @@ url =
     "ws://localhost:8080"
 
 
+colors : List ( String, String )
 colors =
     [ ( "Greensea", "#16a085" )
     , ( "Nephritis", "#27ae60" )
