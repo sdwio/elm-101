@@ -113,6 +113,7 @@ button[disabled] {
     list-style-type: none;
     margin: 0;
   }
+  .info-entry,
   .chat-entry {
     animation: flashing-text 10s;
     opacity: 0.7;
