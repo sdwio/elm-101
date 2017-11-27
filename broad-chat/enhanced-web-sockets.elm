@@ -33,10 +33,6 @@ type AppState
     | Connected
 
 
-type alias Naming =
-    { name : String, hex : String }
-
-
 type alias DisplayedMessage =
     { from : Maybe String
     , text : String
@@ -56,10 +52,14 @@ type alias Model =
     }
 
 
+type alias Naming =
+    { name : String, hex : String, face : String }
+
+
 startingState : Model
 startingState =
     { input = ""
-    , naming = Naming "" ""
+    , naming = Naming "" "" ""
     , waiting = False
     , messages = []
     , appState = NameSelection
@@ -182,6 +182,7 @@ type Msg
     | NewMessage String
     | InitializeConnection
     | SetColor String
+    | SetFace String
 
 
 
@@ -230,6 +231,13 @@ update msg model =
                     model.naming
             in
             ( { model | naming = { naming | hex = hex } }, Cmd.none )
+
+        SetFace face ->
+            let
+                naming =
+                    model.naming
+            in
+            ( { model | naming = { naming | face = face } }, Cmd.none )
 
 
 
@@ -450,7 +458,10 @@ enterYourName model =
             , value model.naming.name
             ]
             []
-        , ul [] <| displayColors model.naming.hex
+        , div [ class "centered" ] [ text "select a color" ]
+        , div [ class "color-selection" ] <| displayColors model.naming.hex
+        , div [ class "centered" ] [ text "select a face" ]
+        , div [ class "square-face" ] <| faceSelection model.naming
         , button
             [ namingIsValid model.naming |> not |> disabled
             , onClick InitializeConnection
@@ -470,12 +481,12 @@ displayColors hex =
                     else
                         ""
             in
-            li
+            div
                 [ style [ ( "background-color", Tuple.second color ) ]
                 , onClick (SetColor (Tuple.second color))
-                , class activeClass
+                , class ("color " ++ activeClass)
                 ]
-                [ text <| Tuple.first color ]
+                [ text "" ]
         )
         colors
 
@@ -624,18 +635,44 @@ url =
 
 colors : List ( String, String )
 colors =
-    [ ( "Greensea", "#16a085" )
-    , ( "Nephritis", "#27ae60" )
+    [ ( "Midnightblue", "#2c3e50" )
+    , ( "Wetapshalt", "#34495e" )
     , ( "Belizehole", "#2980b9" )
-    , ( "Wisteria", "#8e44ad" )
-    , ( "Midnightblue", "#2c3e50" )
+    , ( "Peterriver", "#3498db" )
+    , ( "Greensea", "#16a085" )
+    , ( "Nephritis", "#27ae60" )
     , ( "Sunflower", "#f1c40f" )
     , ( "Orange", "#f39c12" )
     , ( "Pumpkin", "#d35400" )
     , ( "Pomegranate", "#c0392b" )
-    , ( "Asbestor", "#7f8c8d" )
+    , ( "Wisteria", "#8e44ad" )
+    , ( "Amethyst", "#9b59b6" )
+
+    --, ( "Alizarin", "#e74c3c" )
+    --, ( "Asbestor", "#7f8c8d" )
     ]
 
 
+faces =
+    [ "d", "f", "v", "x", "i", "b", "r", "c", "h", "u", "k", "n", "l", "m", "p" ]
 
--- "wss://sdw.io:8020/chat"
+
+faceSelection : Naming -> List (Html Msg)
+faceSelection naming =
+    List.map
+        (\face ->
+            let
+                activeStyle =
+                    if face == naming.face then
+                        [ ( "color", naming.hex ) ]
+                    else
+                        []
+            in
+            span
+                [ class "selectable-face"
+                , onClick <| SetFace face
+                , style activeStyle
+                ]
+                [ text face ]
+        )
+        faces

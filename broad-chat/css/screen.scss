@@ -8,6 +8,33 @@ $white: #fff;
 
 ///
 
+@font-face {
+  font-family: "Square face";
+  src: url("./fonts/Square face.ttf") format("truetype");
+}
+
+.square-face {
+  font-family: "Square face";
+  color: #bbb;
+  text-align: center;
+  margin: 20px 20px;
+  font-size: calc(15vw);
+  max-width: 800px;
+  word-wrap: break-word;
+  @media (min-width: 800px) {
+    font-size: 120px;
+    margin: 20px auto;
+  }
+  .selectable-face {
+    transition: color 0.5s ease-in-out;
+    padding: calc(1.5vw);
+  }
+  line-height: 0.85;
+  word-spacing: 0px;
+}
+
+///
+
 body {
   background-color: $light-background;
   color: $font;
@@ -49,6 +76,37 @@ button[disabled] {
     margin: 0;
     font-weight: bold;
     font-style: italic;
+  }
+}
+
+.centered {
+  text-align: center;
+}
+
+.color-selection {
+  font-size: 0;
+  max-width: 650px;
+  margin: 12px 25px;
+  @media (min-width: 700px) {
+    margin: 12px auto;
+  }
+  display: flex;
+  .color {
+    margin: -0.2px;
+    border: 5px solid rgba(0, 0, 0, 0);
+    width: 160px;
+    height: calc(20vw);
+    @media (min-width: 700px) {
+      height: 140px;
+    }
+    display: inline-block;
+    opacity: 0.7;
+    transition: opacity 1s ease-in-out, border 1s ease-in-out;
+    &.active {
+      border: 5px solid $font;
+      opacity: 1;
+      transition: opacity 1s ease-in-out, border 1s ease-in-out;
+    }
   }
 }
 
