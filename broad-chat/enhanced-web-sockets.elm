@@ -275,6 +275,8 @@ sendName model =
             Json.Encode.object
                 [ ( "type", string "SendName" )
                 , ( "name", string model.naming.name )
+                , ( "hex", string model.naming.hex )
+                , ( "face", string model.naming.face )
                 ]
 
         message =
