@@ -1,0 +1,38 @@
+
+
+type AppState = NameSelection | Connecting | Connected
+
+User starts the app
+    -> appState == NameSelection
+User enters a name > 3 letters
+    userDefinitionIsValid model.user == True
+    => the "Get Started" button is enabled 
+User hits the "Get Started" button
+    start connecting
+    appState == Connecting
+    => show pulsating chat icon
+    connection is established
+    => appState == Connected
+!   Error?
+    => (no error) show chat app
+    
+    
+I have to add message types to the socket messages
+    { <messageType> }
+    messageType 
+        = NewUser: String
+            -- from client
+        | MessageBroadcast: { From: String, Content: String, Time: String, MessageId: number }
+            -- from server
+        | MessageSent: { From: String, Content: String }
+            -- from client
+        | UserList: [String]
+            -- from server
+            
+"""{ "messageType": "newUser", "newUser": "Sam" }"""
+"""{ "messageType": "userList", "userList": ["Sam", "Claire"] }"""
+
+        
+
+    
+    
