@@ -451,21 +451,29 @@ view model =
         ]
 
 
-enterYourName : Model -> Html Msg
-enterYourName model =
+enterYourName : Naming -> Html Msg
+enterYourName naming =
+    let
+        headline =
+            if String.length naming.name < 3 then
+                "What is your name?"
+            else
+                "Hello " ++ naming.name ++ ", nice to see you :D"
+    in
     div []
-        [ input
+        [ div [] [ text headline ]
+        , input
             [ type_ "text"
             , onInput ChangeName
-            , value model.naming.name
+            , value naming.name
             ]
             []
         , div [ class "centered" ] [ text "select a color" ]
-        , div [ class "color-selection" ] <| displayColors model.naming.hex
+        , div [ class "color-selection" ] <| displayColors naming.hex
         , div [ class "centered" ] [ text "select a face" ]
-        , div [ class "square-face" ] <| faceSelection model.naming
+        , div [ class "square-face" ] <| faceSelection naming
         , button
-            [ namingIsValid model.naming |> not |> disabled
+            [ namingIsValid naming |> not |> disabled
             , onClick InitializeConnection
             ]
             [ text "jetzt Loslegen!" ]
@@ -524,7 +532,7 @@ selectViewByAppState : Model -> Html Msg
 selectViewByAppState model =
     case model.appState of
         NameSelection ->
-            enterYourName model
+            enterYourName model.naming
 
         Connecting ->
             div [] [ text "loading" ]
