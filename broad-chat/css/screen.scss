@@ -13,6 +13,15 @@ $white: #fff;
   src: url("./fonts/Square face.ttf") format("truetype");
 }
 
+.fade {
+  opacity: 0.3;
+  transition: opacity 1s ease-in-out;
+}
+
+.show {
+  transition: opacity 1s ease-in-out;
+}
+
 .square-face {
   font-family: "Square face";
   color: #bbb;
