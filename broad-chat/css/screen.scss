@@ -16,10 +16,22 @@ $white: #fff;
 .fade {
   opacity: 0.3;
   transition: opacity 1s ease-in-out;
+  .color {
+    cursor: not-allowed;
+  }
+  .selectable-face {
+    cursor: not-allowed;
+  }
 }
 
 .show {
   transition: opacity 1s ease-in-out;
+  .color {
+    cursor: pointer;
+  }
+  .selectable-face {
+    cursor: pointer;
+  }
 }
 
 .square-face {
