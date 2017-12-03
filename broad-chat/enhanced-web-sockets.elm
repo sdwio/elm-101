@@ -468,15 +468,44 @@ enterYourName naming =
             , value naming.name
             ]
             []
-        , div [ class "centered" ] [ text "select a color" ]
-        , div [ class "color-selection" ] <| displayColors naming.hex
-        , div [ class "centered" ] [ text "select a face" ]
-        , div [ class "square-face" ] <| faceSelection naming
+        , colorFrame naming
+        , faceFrame naming
         , button
             [ namingIsValid naming |> not |> disabled
             , onClick InitializeConnection
             ]
             [ text "jetzt Loslegen!" ]
+        ]
+
+
+colorFrame : Naming -> Html Msg
+colorFrame naming =
+    let
+        classes =
+            if nameIsValid naming.name then
+                "show"
+            else
+                "fade"
+    in
+    div [ class classes ]
+        [ div [ class "centered" ] [ text "select a color" ]
+        , div [ class "color-selection" ] <| displayColors naming.hex
+        ]
+
+
+faceFrame : Naming -> Html Msg
+faceFrame naming =
+    let
+        classes =
+            if hexIsValid naming.hex then
+                "show"
+            else
+                "fade"
+    in
+    div
+        [ class classes ]
+        [ div [ class "centered" ] [ text "select a face" ]
+        , div [ class "square-face" ] <| faceSelection naming
         ]
 
 
@@ -510,8 +539,23 @@ emptyAttribute =
 
 
 namingIsValid : Naming -> Bool
-namingIsValid naming =
-    length naming.name >= 3
+namingIsValid { name, hex, face } =
+    nameIsValid name && faceIsValid face && hexIsValid hex
+
+
+nameIsValid : String -> Bool
+nameIsValid name =
+    length name >= 3
+
+
+faceIsValid : String -> Bool
+faceIsValid face =
+    face /= ""
+
+
+hexIsValid : String -> Bool
+hexIsValid hex =
+    hex /= ""
 
 
 outerFrame : Model -> Html Msg
