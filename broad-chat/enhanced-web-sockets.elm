@@ -183,6 +183,7 @@ type Msg
     | InitializeConnection
     | SetColor String
     | SetFace String
+    | None
 
 
 
@@ -238,6 +239,9 @@ update msg model =
                     model.naming
             in
             ( { model | naming = { naming | face = face } }, Cmd.none )
+
+        None ->
+            ( model, Cmd.none )
 
 
 
@@ -481,36 +485,39 @@ enterYourName naming =
 colorFrame : Naming -> Html Msg
 colorFrame naming =
     let
-        classes =
+        ( classes, update ) =
             if nameIsValid naming.name then
-                "show"
+                ( "show", Just (\color -> onClick (SetColor color)) )
             else
-                "fade"
+                ( "fade", Nothing )
     in
     div [ class classes ]
         [ div [ class "centered" ] [ text "select a color" ]
-        , div [ class "color-selection" ] <| displayColors naming.hex
+        , div [ class "color-selection" ] <| displayColors naming.hex update
         ]
 
 
 faceFrame : Naming -> Html Msg
 faceFrame naming =
     let
-        classes =
+        ( classes, update ) =
             if hexIsValid naming.hex then
-                "show"
+                ( "show", Just <| \face -> onClick <| SetFace face )
             else
-                "fade"
+                ( "fade", Nothing )
     in
     div
         [ class classes ]
         [ div [ class "centered" ] [ text "select a face" ]
-        , div [ class "square-face" ] <| faceSelection naming
+        , div [ class "square-face" ] <| faceSelection naming update
         ]
 
 
-displayColors : String -> List (Html Msg)
-displayColors hex =
+
+--displayColors : String -> List (Html Msg)
+
+
+displayColors hex update =
     List.map
         (\color ->
             let
@@ -519,12 +526,21 @@ displayColors hex =
                         "active"
                     else
                         ""
+
+                onClick =
+                    case update of
+                        Just fn ->
+                            [ fn <| Tuple.second color ]
+
+                        Nothing ->
+                            []
             in
             div
-                [ style [ ( "background-color", Tuple.second color ) ]
-                , onClick (SetColor (Tuple.second color))
-                , class ("color " ++ activeClass)
-                ]
+                ([ style [ ( "background-color", Tuple.second color ) ]
+                 , class ("color " ++ activeClass)
+                 ]
+                    ++ onClick
+                )
                 [ text "" ]
         )
         colors
@@ -711,8 +727,11 @@ faces =
     [ "d", "f", "v", "x", "i", "b", "r", "c", "h", "u", "k", "n", "l", "m", "p" ]
 
 
-faceSelection : Naming -> List (Html Msg)
-faceSelection naming =
+
+--faceSelection : Naming -> List (Html Msg)
+
+
+faceSelection naming update =
     List.map
         (\face ->
             let
@@ -721,12 +740,21 @@ faceSelection naming =
                         [ ( "color", naming.hex ) ]
                     else
                         []
+
+                onClick =
+                    case update of
+                        Nothing ->
+                            []
+
+                        Just fn ->
+                            [ fn face ]
             in
             span
-                [ class "selectable-face"
-                , onClick <| SetFace face
-                , style activeStyle
-                ]
+                ([ class "selectable-face"
+                 , style activeStyle
+                 ]
+                    ++ onClick
+                )
                 [ text face ]
         )
         faces
