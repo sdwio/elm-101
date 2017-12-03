@@ -14,6 +14,9 @@ import String exposing (length)
 import WebSocket
 
 
+--- Continue: add naming for user listing
+
+
 main =
     Html.program
         { init = init
@@ -49,6 +52,7 @@ type alias Model =
     , messages : List DisplayedMessage
     , appState : AppState
     , clientNames : List String
+    , clientNaming : List Naming
     }
 
 
@@ -64,6 +68,7 @@ startingState =
     , messages = []
     , appState = NameSelection
     , clientNames = []
+    , clientNaming = []
     }
 
 
@@ -501,7 +506,7 @@ faceFrame : Naming -> Html Msg
 faceFrame naming =
     let
         ( classes, update ) =
-            if hexIsValid naming.hex then
+            if hexIsValid naming.hex && nameIsValid naming.name then
                 ( "show", Just <| \face -> onClick <| SetFace face )
             else
                 ( "fade", Nothing )
@@ -612,7 +617,11 @@ mainStructure model =
 activeUsers : Model -> Html Msg
 activeUsers model =
     div [ class "active-users" ]
-        [ div [ class "active-users-heading" ] [ text <| toString (List.length model.clientNames) ++ " active users:" ]
+        [ div [ class "active-users-heading" ]
+            [ text <|
+                toString (List.length model.clientNames)
+                    ++ " active users:"
+            ]
         , div [ class "active-users-list" ]
             [ ul [] (listClientNames model.clientNames) ]
         ]
