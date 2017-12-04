@@ -145,6 +145,14 @@ type alias ClientNames =
     }
 
 
+type alias ClientNaming =
+    { id : Int
+    , messageType : String
+    , timestamp : Float
+    , clientNames : List Naming
+    }
+
+
 clientNamesDecoder : String -> Result String ClientNames
 clientNamesDecoder json =
     Decode.decodeString
@@ -153,6 +161,25 @@ clientNamesDecoder json =
             (Decode.field "type" Decode.string)
             (Decode.field "timestamp" Decode.float)
             (Decode.field "clientNames" (Decode.list Decode.string))
+        )
+        json
+
+
+namingDecoder =
+    Decode.map3 Naming
+        (Decode.field "name" Decode.string)
+        (Decode.field "hex" Decode.string)
+        (Decode.field "face" Decode.string)
+
+
+clientNamingDecoder : String -> Result String ClientNaming
+clientNamingDecoder json =
+    Decode.decodeString
+        (Decode.map4 ClientNaming
+            (Decode.field "id" Decode.int)
+            (Decode.field "type" Decode.string)
+            (Decode.field "timestamp" Decode.float)
+            (Decode.field "clientNames" (Decode.list namingDecoder))
         )
         json
 
