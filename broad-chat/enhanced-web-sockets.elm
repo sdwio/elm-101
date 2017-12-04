@@ -38,6 +38,7 @@ type AppState
 
 type alias DisplayedMessage =
     { from : Maybe String
+    , naming : Maybe Naming
     , text : String
     , class : String
     , timestamp : Float
@@ -121,18 +122,20 @@ type alias ChatMessage =
     , timestamp : Float
     , text : String
     , from : String
+    , naming : Naming
     }
 
 
 chatMessageDecoder : String -> Result String ChatMessage
 chatMessageDecoder json =
     Decode.decodeString
-        (Decode.map5 ChatMessage
+        (Decode.map6 ChatMessage
             (Decode.field "id" Decode.int)
             (Decode.field "type" Decode.string)
             (Decode.field "timestamp" Decode.float)
             (Decode.field "text" Decode.string)
             (Decode.field "from" Decode.string)
+            (Decode.field "naming" namingDecoder)
         )
         json
 
@@ -339,6 +342,7 @@ setClientNames model json =
             let
                 message =
                     { from = Nothing
+                    , naming = Nothing
                     , text = json ++ string ++ "ERROR"
                     , class = "standard"
                     , timestamp = 0
@@ -369,6 +373,7 @@ setClientNamings model json =
             let
                 message =
                     { from = Nothing
+                    , naming = Nothing
                     , text = json ++ string ++ "ERROR"
                     , class = "standard"
                     , timestamp = 0
@@ -391,6 +396,7 @@ handleChatMessage model json =
             let
                 message =
                     { from = Just chatMessage.from
+                    , naming = Just chatMessage.naming
                     , text = chatMessage.text
                     , class = "chat-message"
                     , timestamp = chatMessage.timestamp
@@ -406,7 +412,7 @@ handleChatMessage model json =
             )
 
         Err string ->
-            justAddJson model json
+            justAddJson model string
 
 
 handleInfoMessage : Model -> String -> ( Model, Cmd Msg )
@@ -416,6 +422,7 @@ handleInfoMessage model json =
             let
                 message =
                     { from = Nothing
+                    , naming = Nothing
                     , text = infoMessage.text
                     , class = "info-message"
                     , timestamp = infoMessage.timestamp
@@ -449,6 +456,7 @@ justAddJson model json =
     let
         message =
             { from = Nothing
+            , naming = Nothing
             , text = json ++ " DEFAULT"
             , class = "standard"
             , timestamp = 0
