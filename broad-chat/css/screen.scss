@@ -38,9 +38,6 @@ $white: #fff;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  .name {
-    margin: 0 0 16px 16px;
-  }
 }
 
 .square-face-icon {
@@ -48,7 +45,9 @@ $white: #fff;
   font-style: normal;
   font-family: "Square face";
   text-align: center;
-  font-size: 70px;
+  font-size: 50px;
+  margin-bottom: -16px;
+  margin-right: 6px;
   line-height: 0.85;
 }
 
@@ -108,13 +107,16 @@ button[disabled] {
   }
 }
 
+.active-users {
+  overflow-x: hidden;
+}
 .active-users-heading {
   margin: 8px 0;
 }
 .active-users-list {
   li {
     list-style-type: none;
-    margin: 0;
+    margin-bottom: 16px;
     font-weight: bold;
     font-style: italic;
   }
@@ -216,14 +218,21 @@ button[disabled] {
   .chat-entry {
     animation: flashing-text 10s;
     opacity: 0.7;
+    margin-bottom: 12px;
+    .chat-content {
+      display: flex;
+      line-height: 1.2;
+      align-items: center;
+      justify-content: start;
+      .name {
+        font-weight: bold;
+        font-style: italic;
+      }
+    }
     .chat-time {
       margin-top: -4px;
-      margin-bottom: -8px;
+      margin-bottom: -4px;
       text-align: right;
-    }
-    .name {
-      font-weight: bold;
-      font-style: italic;
     }
   }
 }

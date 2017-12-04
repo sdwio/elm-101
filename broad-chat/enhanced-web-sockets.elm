@@ -14,7 +14,10 @@ import String exposing (length)
 import WebSocket
 
 
---- Continue: add naming for user listing
+--- Continue:
+-- remove name
+-- refactor into several files
+-- style registration
 
 
 main =
@@ -740,16 +743,13 @@ chatHistory model =
 chatEntry : DisplayedMessage -> ( String, Html Msg )
 chatEntry message =
     let
-        from =
-            case message.from of
-                Just from ->
-                    from ++ ": "
+        ( showNaming, name, hex, face ) =
+            case message.naming of
+                Just naming ->
+                    ( True, naming.name ++ ": ", naming.hex, naming.face )
 
                 Nothing ->
-                    ""
-
-        time2 =
-            toString message.timestamp
+                    ( False, "", "", "" )
 
         time =
             format "%H:%M %d.%m.'%y" (fromTime message.timestamp)
@@ -757,9 +757,16 @@ chatEntry message =
     ( toString message.id
     , li [ class "chat-entry" ]
         [ div [ class "chat-time grey" ] [ text time ]
-        , div []
-            [ span [ class "name" ] [ text from ]
-            , text message.text
+        , div [ class "chat-content" ]
+            [ span
+                [ class "square-face-icon"
+                , style [ ( "color", hex ) ]
+                ]
+                [ text face ]
+            , div []
+                [ span [ class "name", style [ ( "color", hex ) ] ] [ text name ]
+                , text message.text
+                ]
             ]
         ]
     )
