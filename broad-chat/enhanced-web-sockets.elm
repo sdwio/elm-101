@@ -149,7 +149,7 @@ type alias ClientNaming =
     { id : Int
     , messageType : String
     , timestamp : Float
-    , clientNames : List Naming
+    , clientNamings : List Naming
     }
 
 
@@ -179,7 +179,7 @@ clientNamingDecoder json =
             (Decode.field "id" Decode.int)
             (Decode.field "type" Decode.string)
             (Decode.field "timestamp" Decode.float)
-            (Decode.field "clientNames" (Decode.list namingDecoder))
+            (Decode.field "clientNamings" (Decode.list namingDecoder))
         )
         json
 
@@ -300,6 +300,9 @@ evaluateNewMessage model json =
         Ok "ClientNames" ->
             setClientNames model json
 
+        Ok "ClientNamings" ->
+            setClientNamings model json
+
         _ ->
             justAddJson model json
 
@@ -336,7 +339,37 @@ setClientNames model json =
             let
                 message =
                     { from = Nothing
-                    , text = json ++ string ++ "ERRÖR"
+                    , text = json ++ string ++ "ERROR"
+                    , class = "standard"
+                    , timestamp = 0
+                    , id = 0
+                    }
+            in
+            ( { model
+                | waiting = False
+                , appState = Connected
+                , messages = message :: model.messages
+              }
+            , Cmd.none
+            )
+
+
+setClientNamings : Model -> String -> ( Model, Cmd Msg )
+setClientNamings model json =
+    case clientNamingDecoder json of
+        Ok clientNamingsMessage ->
+            ( { model
+                | appState = Connected
+                , clientNaming = clientNamingsMessage.clientNamings
+              }
+            , Cmd.none
+            )
+
+        Err string ->
+            let
+                message =
+                    { from = Nothing
+                    , text = json ++ string ++ "ERROR"
                     , class = "standard"
                     , timestamp = 0
                     , id = 0
@@ -646,17 +679,27 @@ activeUsers model =
     div [ class "active-users" ]
         [ div [ class "active-users-heading" ]
             [ text <|
-                toString (List.length model.clientNames)
+                toString (List.length model.clientNaming)
                     ++ " active users:"
             ]
         , div [ class "active-users-list" ]
-            [ ul [] (listClientNames model.clientNames) ]
+            [ ul [] (listClientNames model.clientNaming) ]
         ]
 
 
-listClientNames : List String -> List (Html msg)
-listClientNames clientNames =
-    List.map (\name -> li [] [ text name ]) clientNames
+listClientNames : List Naming -> List (Html msg)
+listClientNames clientNaming =
+    List.map
+        (\{ hex, name, face } ->
+            li
+                [ style [ ( "color", hex ) ], class "listed-name" ]
+                [ span
+                    [ class "square-face-icon" ]
+                    [ text face ]
+                , span [ class "name" ] [ text <| " " ++ name ]
+                ]
+        )
+        clientNaming
 
 
 inputFrame : Model -> Html Msg
@@ -683,22 +726,11 @@ inputFrame model =
 chatHistory : Model -> Html Msg
 chatHistory model =
     div [ class "chat-history" ]
-        [ Keyed.ul [] (List.map chatEntry1 model.messages) ]
+        [ Keyed.ul [] (List.map chatEntry model.messages) ]
 
 
-chatEntry : String -> Html Msg
+chatEntry : DisplayedMessage -> ( String, Html Msg )
 chatEntry message =
-    li [ class "chat-entry" ]
-        [ div [ class "chat-time grey" ] [ text "16.11.'17 12:43" ]
-        , div []
-            [ span [ class "name" ] [ text "Sam: " ]
-            , text message
-            ]
-        ]
-
-
-chatEntry1 : DisplayedMessage -> ( String, Html Msg )
-chatEntry1 message =
     let
         from =
             case message.from of
@@ -748,7 +780,10 @@ colors =
     , ( "Greensea", "#16a085" )
     , ( "Nephritis", "#27ae60" )
     , ( "Sunflower", "#f1c40f" )
-    , ( "Orange", "#f39c12" )
+
+    --, ( "Sunflower", "#dbb20d" ) -- darkened
+    --, ( "Orange", "#f39c12" ) -- darkened
+    , ( "Orange", "#dd8d0d" )
     , ( "Pumpkin", "#d35400" )
     , ( "Pomegranate", "#c0392b" )
     , ( "Wisteria", "#8e44ad" )

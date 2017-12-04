@@ -34,7 +34,27 @@ $white: #fff;
   }
 }
 
+.listed-name {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  .name {
+    margin: 0 0 16px 16px;
+  }
+}
+
+.square-face-icon {
+  font-weight: normal;
+  font-style: normal;
+  font-family: "Square face";
+  text-align: center;
+  font-size: 70px;
+  line-height: 0.85;
+}
+
 .square-face {
+  font-weight: normal;
+  font-style: normal;
   font-family: "Square face";
   color: #bbb;
   text-align: center;
