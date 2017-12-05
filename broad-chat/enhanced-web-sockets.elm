@@ -215,6 +215,7 @@ init =
 
 type Msg
     = ChangeName String
+    | CheckForEnter Int
     | Input String
     | Send
     | NewMessage String
@@ -235,21 +236,17 @@ update msg model =
             model
     in
     case msg of
+        CheckForEnter key ->
+            if key == 13 then
+                sendMessage model
+            else
+                ( model, Cmd.none )
+
         Input newInput ->
             ( { model | input = newInput }, Cmd.none )
 
         Send ->
-            let
-                mObj =
-                    Json.Encode.object
-                        [ ( "type", string "ChatMessageToServer" )
-                        , ( "text", string model.input )
-                        ]
-
-                chatMessage =
-                    encode 0 mObj
-            in
-            ( { model | input = "", waiting = True }, WebSocket.send url chatMessage )
+            sendMessage model
 
         NewMessage str ->
             evaluateNewMessage model str
@@ -328,6 +325,24 @@ sendName model =
             encode 0 mObj
     in
     ( model, WebSocket.send url message )
+
+
+sendMessage : Model -> ( Model, Cmd Msg )
+sendMessage model =
+    if model.input == "" then
+        ( model, Cmd.none )
+    else
+        let
+            mObj =
+                Json.Encode.object
+                    [ ( "type", string "ChatMessageToServer" )
+                    , ( "text", string model.input )
+                    ]
+
+            chatMessage =
+                encode 0 mObj
+        in
+        ( { model | input = "", waiting = True }, WebSocket.send url chatMessage )
 
 
 setClientNames : Model -> String -> ( Model, Cmd Msg )
@@ -534,27 +549,49 @@ view model =
 enterYourName : Naming -> Html Msg
 enterYourName naming =
     let
-        headline =
+        hex =
+            getSelectedOrNeutralColor naming.hex
+
+        ( helloClass, nameClass ) =
             if String.length naming.name < 3 then
-                "What is your name?"
+                ( "show", "fade-out" )
             else
-                "Hello " ++ naming.name ++ ", nice to see you :D"
+                ( "fade-out", "show" )
     in
-    div []
-        [ div [] [ text headline ]
-        , input
-            [ type_ "text"
-            , onInput ChangeName
-            , value naming.name
+    div [ class "name-selection" ]
+        [ div [ class "name-container" ]
+            [ div [ class <| "name-headline " ++ helloClass ]
+                [ text "What is your name?" ]
+            , div [ class <| "name-headline " ++ nameClass ]
+                [ text <| "Hello "
+                , span [ style [ ( "color", hex ), ( "transition", "color 1s" ) ] ]
+                    [ text naming.name ]
+                , text ", nice to see you :D"
+                ]
             ]
-            []
+        , div [ class "input-frame" ]
+            [ div [ class "input-element" ]
+                [ label [ for "main-input" ]
+                    [ i [ class "fa fa-pencil fa-flip-horizontal" ] [] ]
+                , input
+                    [ class "main-input"
+                    , id "main-input"
+                    , type_ "text"
+                    , name "main-input"
+                    , onInput ChangeName
+                    , value naming.name
+                    ]
+                    []
+                ]
+            ]
         , colorFrame naming
         , faceFrame naming
         , button
-            [ namingIsValid naming |> not |> disabled
+            [ class "start-it"
+            , namingIsValid naming |> not |> disabled
             , onClick InitializeConnection
             ]
-            [ text "jetzt Loslegen!" ]
+            [ text "Start it!" ]
         ]
 
 
@@ -652,12 +689,15 @@ hexIsValid hex =
 
 outerFrame : Model -> Html Msg
 outerFrame model =
+    let
+        hex =
+            getSelectedOrNeutralColor model.naming.hex
+    in
     div [ class "outer-frame" ]
-        [ div [ class "head" ]
+        [ div [ class "head", style [ ( "background-color", hex ) ] ]
             [ h1 []
                 [ i [ class "fa fa-comments-o" ] []
-                , text " Broad-Chat | "
-                , small [] [ text (" hi " ++ model.naming.name) ]
+                , text " Broad-Chat"
                 ]
             ]
         , selectViewByAppState model
@@ -725,6 +765,7 @@ inputFrame model =
                 , type_ "text"
                 , name "main-input"
                 , onInput Input
+                , onKeyDown CheckForEnter
                 , value model.input
                 ]
                 []
@@ -786,6 +827,18 @@ url =
     "ws://localhost:8080"
 
 
+neutralColor =
+    "#34495e"
+
+
+getSelectedOrNeutralColor : String -> String
+getSelectedOrNeutralColor hex =
+    if hex /= "" then
+        hex
+    else
+        neutralColor
+
+
 colors : List ( String, String )
 colors =
     [ ( "Midnightblue", "#2c3e50" )
@@ -844,3 +897,8 @@ faceSelection naming update =
                 [ text face ]
         )
         faces
+
+
+onKeyDown : (Int -> msg) -> Attribute msg
+onKeyDown tagger =
+    on "keydown" (Decode.map tagger keyCode)
