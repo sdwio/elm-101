@@ -15,6 +15,7 @@ import WebSocket
 
 
 --- Continue:
+-- add browser notifications
 -- remove name
 -- refactor into several files
 -- style registration
