@@ -40,7 +40,48 @@ $white: #fff;
   justify-content: flex-start;
 }
 
+.pulse-1 {
+  animation: pulsing-text-1 1.5s;
+}
+
+.pulse-2 {
+  animation: pulsing-text-2 0.5s;
+}
+
+@keyframes pulsing-text-1 {
+  0% {
+    font-size: 56px;
+  }
+  100% {
+    font-size: 50px;
+  }
+}
+
+@keyframes pulsing-text-2 {
+  0% {
+    font-size: 58px;
+  }
+  100% {
+    font-size: 50px;
+  }
+}
+
+.square-face-list-icon {
+  height: 45px;
+  width: 45px;
+  position: relative;
+  font-weight: normal;
+  font-style: normal;
+  font-family: "Square face";
+  text-align: center;
+  font-size: 50px;
+  margin-bottom: -16px;
+  margin-right: 6px;
+  line-height: 0.85;
+}
+
 .square-face-icon {
+  postion: absolute;
   font-weight: normal;
   font-style: normal;
   font-family: "Square face";
@@ -108,9 +149,14 @@ body {
   }
 }
 
+button {
+  transition: opacity 1s;
+}
+
 button[disabled] {
   opacity: 0.4;
   cursor: not-allowed;
+  transition: opacity 1s;
 }
 
 .name-selection {
@@ -152,13 +198,15 @@ button[disabled] {
 }
 
 .start-it {
+  border: none;
   color: $white;
   background-color: $darker;
-  border: 1px solid $darker;
-  transition: color 0.5s, background-color 0.5s;
+  border: 0;
+  transition: color 0.5s, background-color 0.5s, opacity 1s;
   &:hover {
     color: $darker;
-    background-color: $white;
+    background-color: $white !important;
+    border: none;
     transition: color 0.5s, background-color 0.5s;
   }
 }

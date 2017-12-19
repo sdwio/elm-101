@@ -18,6 +18,8 @@ import WebSocket
 -- add browser notifications
 -- remove name
 -- refactor into several files
+-- add an id to Naming to let the right face pulse on input
+-- Done:
 -- style registration
 
 
@@ -62,13 +64,13 @@ type alias Model =
 
 
 type alias Naming =
-    { name : String, hex : String, face : String }
+    { pulseClass : String, name : String, hex : String, face : String }
 
 
 startingState : Model
 startingState =
     { input = ""
-    , naming = Naming "" "" ""
+    , naming = Naming "pulse-1" "" "" ""
     , waiting = False
     , messages = []
     , appState = NameSelection
@@ -173,7 +175,7 @@ clientNamesDecoder json =
 
 
 namingDecoder =
-    Decode.map3 Naming
+    Decode.map3 (Naming "pulse-1")
         (Decode.field "name" Decode.string)
         (Decode.field "hex" Decode.string)
         (Decode.field "face" Decode.string)
@@ -244,7 +246,31 @@ update msg model =
                 ( model, Cmd.none )
 
         Input newInput ->
-            ( { model | input = newInput }, Cmd.none )
+            let
+                clientNaming =
+                    List.map
+                        (\naming ->
+                            let
+                                pulseClass =
+                                    if naming.pulseClass == "pulse-1" then
+                                        "pulse-2"
+                                    else
+                                        "pulse-1"
+                            in
+                            { naming | pulseClass = pulseClass }
+                        )
+                        model.clientNaming
+
+                message =
+                    encode 0 <|
+                        Json.Encode.object
+                            [ ( "type", string "typed" )
+                            , ( "name", string model.naming.name )
+                            , ( "hex", string model.naming.hex )
+                            , ( "face", string model.naming.face )
+                            ]
+            in
+            ( { model | input = newInput, clientNaming = clientNaming }, WebSocket.send url message )
 
         Send ->
             sendMessage model
@@ -589,6 +615,7 @@ enterYourName naming =
         , faceFrame naming
         , button
             [ class "start-it"
+            , style [ ( "background-color", naming.hex ), ( "transition", "background-color 1s, opacity 0.5s    " ) ]
             , namingIsValid naming |> not |> disabled
             , onClick InitializeConnection
             ]
@@ -742,12 +769,15 @@ activeUsers model =
 listClientNames : List Naming -> List (Html msg)
 listClientNames clientNaming =
     List.map
-        (\{ hex, name, face } ->
+        (\{ pulseClass, hex, name, face } ->
             li
                 [ style [ ( "color", hex ) ], class "listed-name" ]
                 [ span
-                    [ class "square-face-icon" ]
-                    [ text face ]
+                    [ class "square-face-list-icon" ]
+                    [ span
+                        [ class <| "square-face-icon " ++ pulseClass ]
+                        [ text face ]
+                    ]
                 , span [ class "name" ] [ text <| " " ++ name ]
                 ]
         )
