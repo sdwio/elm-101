@@ -99,16 +99,20 @@ $white: #fff;
   color: #bbb;
   text-align: center;
   margin: 20px 20px;
-  font-size: calc(15vw);
-  max-width: 800px;
+  font-size: calc(18vw);
+  max-width: calc(98vw);
   word-wrap: break-word;
   @media (min-width: 800px) {
     font-size: 120px;
     margin: 20px auto;
+    max-width: 800px;
   }
   .selectable-face {
     transition: color 0.5s ease-in-out;
     padding: calc(1.5vw);
+    @media (min-width: 800px) {
+      padding: 16px;
+    }
   }
   line-height: 0.85;
   word-spacing: 0px;
@@ -218,17 +222,17 @@ button[disabled] {
 .color-selection {
   font-size: 0;
   max-width: 650px;
-  margin: 12px 25px;
-  @media (min-width: 700px) {
+  margin: 12px;
+  @media (min-width: 800px) {
     margin: 12px auto;
   }
   display: flex;
   .color {
     margin: -0.2px;
     border: 5px solid rgba(0, 0, 0, 0);
-    width: 160px;
     height: calc(20vw);
-    @media (min-width: 700px) {
+    width: calc(5.5vw);
+    @media (min-width: 800px) {
       height: 140px;
     }
     display: inline-block;

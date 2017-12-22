@@ -19,6 +19,9 @@ import WebSocket
 -- remove name
 -- refactor into several files
 -- add an id to Naming to let the right face pulse on input
+-- refactor userId to clientId
+-- collect message types
+----------
 -- Done:
 -- style registration
 
@@ -64,13 +67,18 @@ type alias Model =
 
 
 type alias Naming =
-    { pulseClass : String, name : String, hex : String, face : String }
+    { pulseClass : String
+    , name : String
+    , hex : String
+    , face : String
+    , id : Int
+    }
 
 
 startingState : Model
 startingState =
     { input = ""
-    , naming = Naming "pulse-1" "" "" ""
+    , naming = Naming "pulse-1" "" "" "" -1
     , waiting = False
     , messages = []
     , appState = NameSelection
@@ -175,10 +183,11 @@ clientNamesDecoder json =
 
 
 namingDecoder =
-    Decode.map3 (Naming "pulse-1")
+    Decode.map4 (Naming "pulse-1")
         (Decode.field "name" Decode.string)
         (Decode.field "hex" Decode.string)
         (Decode.field "face" Decode.string)
+        (Decode.field "id" Decode.int)
 
 
 clientNamingDecoder : String -> Result String ClientNaming
@@ -191,6 +200,11 @@ clientNamingDecoder json =
             (Decode.field "clientNamings" (Decode.list namingDecoder))
         )
         json
+
+
+requestNameDecoder : String -> Result String Int
+requestNameDecoder json =
+    Decode.decodeString (Decode.field "userId" Decode.int) json
 
 
 
@@ -246,31 +260,9 @@ update msg model =
                 ( model, Cmd.none )
 
         Input newInput ->
-            let
-                clientNaming =
-                    List.map
-                        (\naming ->
-                            let
-                                pulseClass =
-                                    if naming.pulseClass == "pulse-1" then
-                                        "pulse-2"
-                                    else
-                                        "pulse-1"
-                            in
-                            { naming | pulseClass = pulseClass }
-                        )
-                        model.clientNaming
-
-                message =
-                    encode 0 <|
-                        Json.Encode.object
-                            [ ( "type", string "typed" )
-                            , ( "name", string model.naming.name )
-                            , ( "hex", string model.naming.hex )
-                            , ( "face", string model.naming.face )
-                            ]
-            in
-            ( { model | input = newInput, clientNaming = clientNaming }, WebSocket.send url message )
+            ( { model | input = newInput }
+            , WebSocket.send url <| encodeTypingMessage model.naming
+            )
 
         Send ->
             sendMessage model
@@ -311,6 +303,18 @@ update msg model =
 --            ( { model | appState = Connecting }, WebSocket.send url message )
 
 
+encodeTypingMessage : Naming -> String
+encodeTypingMessage { name, hex, face, id } =
+    encode 0 <|
+        Json.Encode.object
+            [ ( "type", string "Typing" )
+            , ( "name", string name )
+            , ( "hex", string hex )
+            , ( "face", string face )
+            , ( "id", int id )
+            ]
+
+
 evaluateNewMessage : Model -> String -> ( Model, Cmd Msg )
 evaluateNewMessage model json =
     let
@@ -325,7 +329,7 @@ evaluateNewMessage model json =
             handleChatMessage model json
 
         Ok "RequestName" ->
-            sendName model
+            sendName model json
 
         Ok "ClientNames" ->
             setClientNames model json
@@ -333,25 +337,68 @@ evaluateNewMessage model json =
         Ok "ClientNamings" ->
             setClientNamings model json
 
+        Ok "Typing" ->
+            pulseIcon model json
+
         _ ->
             justAddJson model json
 
 
-sendName : Model -> ( Model, Cmd Msg )
-sendName model =
+pulseIcon : Model -> String -> ( Model, Cmd Msg )
+pulseIcon model json =
     let
-        mObj =
-            Json.Encode.object
-                [ ( "type", string "SendName" )
-                , ( "name", string model.naming.name )
-                , ( "hex", string model.naming.hex )
-                , ( "face", string model.naming.face )
-                ]
+        pulsingId =
+            getUserId json
 
-        message =
-            encode 0 mObj
+        clientNaming =
+            List.map
+                (\naming ->
+                    if naming.id == pulsingId then
+                        let
+                            pulseClass =
+                                if naming.pulseClass == "pulse-1" then
+                                    "pulse-2"
+                                else
+                                    "pulse-1"
+                        in
+                        { naming | pulseClass = pulseClass }
+                    else
+                        naming
+                )
+                model.clientNaming
     in
-    ( model, WebSocket.send url message )
+    ( { model | clientNaming = clientNaming }, Cmd.none )
+
+
+sendName : Model -> String -> ( Model, Cmd Msg )
+sendName model json =
+    let
+        message =
+            encode 0 <|
+                Json.Encode.object
+                    [ ( "type", string "SendName" )
+                    , ( "name", string model.naming.name )
+                    , ( "hex", string model.naming.hex )
+                    , ( "face", string model.naming.face )
+                    ]
+
+        naming =
+            model.naming
+
+        newNaming =
+            { naming | id = getUserId json }
+    in
+    ( { model | naming = newNaming }, WebSocket.send url message )
+
+
+getUserId : String -> Int
+getUserId json =
+    case requestNameDecoder json of
+        Ok id ->
+            id
+
+        Err string ->
+            -2
 
 
 sendMessage : Model -> ( Model, Cmd Msg )
@@ -369,7 +416,12 @@ sendMessage model =
             chatMessage =
                 encode 0 mObj
         in
-        ( { model | input = "", waiting = True }, WebSocket.send url chatMessage )
+        ( { model | input = "", waiting = True }
+        , Cmd.batch
+            [ WebSocket.send url chatMessage
+            , WebSocket.send url <| encodeTypingMessage model.naming
+            ]
+        )
 
 
 setClientNames : Model -> String -> ( Model, Cmd Msg )
@@ -484,16 +536,6 @@ handleInfoMessage model json =
 
         Err string ->
             justAddJson model json
-
-
-
-{--
-            type alias DisplayedMessage =
-                { from : Maybe String
-                , text : String
-                , class : String
-                }
---}
 
 
 justAddJson : Model -> String -> ( Model, Cmd Msg )
@@ -831,6 +873,7 @@ chatEntry message =
         [ div [ class "chat-time grey" ] [ text time ]
         , div [ class "chat-content" ]
             [ span
+                -- TODO add pulse-1 with appropriate styling (?)
                 [ class "square-face-icon"
                 , style [ ( "color", hex ) ]
                 ]
