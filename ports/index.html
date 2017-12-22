@@ -1,0 +1,14 @@
+<div id="spelling"></div>
+<script src="random.js"></script>
+<script>
+var app = Elm.Random.fullscreen();
+console.log(app.ports);
+app.ports.requestNumbers.subscribe(function(howManyNumbers) {
+  var numbers = randomNumbers(howManyNumbers);
+  app.ports.getNumbers.send(numbers);
+});
+function randomNumbers(howManyNumbers) {
+  console.log("randomNumbers called");
+  return [1, 2, 3];
+}
+</script>
